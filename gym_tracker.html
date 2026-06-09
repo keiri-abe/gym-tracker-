@@ -63,6 +63,7 @@ input:focus,select:focus{border-color:#3266ad;background:#fff;}
 .user-item-name{font-size:16px;font-weight:500;}
 .user-item-name.active-user{color:#3266ad;}
 .checkmark{color:#3266ad;font-size:18px;}
+.btn-edit{background:none;border:none;cursor:pointer;color:#3266ad;font-size:15px;padding:4px;line-height:1;}
 </style>
 </head>
 <body>
@@ -187,6 +188,38 @@ input:focus,select:focus{border-color:#3266ad;background:#fff;}
       </div>
     </div>
     <button onclick="closeUserModal()" style="width:100%;margin-top:12px;padding:12px;background:#f2f2f7;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;">閉じる</button>
+  </div>
+</div>
+
+<!-- トレーニング編集モーダル -->
+<div class="modal-bg" id="edit-rec-modal" onclick="closeEditRecModalBg(event)">
+  <div class="modal">
+    <h3>✏️ トレーニング記録を編集</h3>
+    <label>日付</label><input type="date" id="edit-date">
+    <label>マシン名</label><input type="text" id="edit-machine">
+    <div class="row3">
+      <div><label>重量 (kg)</label><input type="number" id="edit-weight" step="0.5" min="0"></div>
+      <div><label>セット数</label><input type="number" id="edit-sets" step="1" min="1"></div>
+      <div><label>回数</label><input type="number" id="edit-reps" step="1" min="1"></div>
+    </div>
+    <label>メモ</label><input type="text" id="edit-memo">
+    <button class="btn-primary" onclick="saveEditRec()">💾 保存する</button>
+    <button onclick="closeEditRecModal()" style="width:100%;margin-top:8px;padding:12px;background:#f2f2f7;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;">キャンセル</button>
+  </div>
+</div>
+
+<!-- 体組成編集モーダル -->
+<div class="modal-bg" id="edit-body-modal" onclick="closeEditBodyModalBg(event)">
+  <div class="modal">
+    <h3>✏️ 体組成記録を編集</h3>
+    <label>日付</label><input type="date" id="edit-b-date" readonly style="background:#f2f2f7;color:#8e8e93;">
+    <div class="row3">
+      <div><label>体重 (kg)</label><input type="number" id="edit-b-weight" step="0.1" min="0"></div>
+      <div><label>筋肉量 (kg)</label><input type="number" id="edit-b-muscle" step="0.1" min="0"></div>
+      <div><label>体脂肪率 (%)</label><input type="number" id="edit-b-fat" step="0.1" min="0"></div>
+    </div>
+    <button class="btn-primary" onclick="saveEditBody()">💾 保存する</button>
+    <button onclick="closeEditBodyModal()" style="width:100%;margin-top:8px;padding:12px;background:#f2f2f7;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;">キャンセル</button>
   </div>
 </div>
 
@@ -345,8 +378,9 @@ function renderToday(){
   el.innerHTML='<div class="card"><p style="font-size:13px;color:#8e8e93;margin-bottom:8px;">今日の記録（'+list.length+'件）</p>'
     +list.map(r=>`<div class="log-item">
       <div><span class="log-machine">${r.machine}</span><div class="log-sub">${setsLabel(r)}${r.memo?' · '+r.memo:''}</div></div>
-      <div style="display:flex;align-items:center;gap:10px;">
+      <div style="display:flex;align-items:center;gap:6px;">
         <span class="log-weight">${r.weight}kg</span>
+        <button class="btn-edit" onclick="openEditRec(${r.id})">✏️</button>
         <button class="btn-del" onclick="delRec(${r.id})">🗑</button>
       </div></div>`).join('')+'</div>';
 }
@@ -404,10 +438,11 @@ function renderBodyHistory(){
   el.innerHTML='<div class="card"><p style="font-size:13px;color:#8e8e93;margin-bottom:8px;">記録履歴</p>'
     +body.map(r=>`<div class="log-item">
       <span class="log-machine">${r.date}</span>
-      <div style="display:flex;align-items:center;gap:12px;font-size:13px;">
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;">
         ${r.weight!=null?'<span style="color:#3266ad">'+r.weight+'kg</span>':''}
         ${r.muscle!=null?'<span style="color:#1D9E75">'+r.muscle+'kg</span>':''}
         ${r.fat!=null?'<span style="color:#e24b4a">'+r.fat+'%</span>':''}
+        <button class="btn-edit" onclick="openEditBody('${r.date}')">✏️</button>
         <button class="btn-del" onclick="delBody('${r.date}')">🗑</button>
       </div></div>`).join('')+'</div>';
 }
@@ -418,6 +453,69 @@ function delBody(date){
   saveBody(body);
   renderBodyLatest(); renderBodyHistory();
   if(document.getElementById('sec-stats').classList.contains('active')) renderStats();
+}
+
+// トレーニング編集
+let editingRecId=null;
+function openEditRec(id){
+  const rec=getRecords().find(r=>r.id===id);
+  if(!rec)return;
+  editingRecId=id;
+  document.getElementById('edit-date').value=rec.date;
+  document.getElementById('edit-machine').value=rec.machine;
+  document.getElementById('edit-weight').value=rec.weight;
+  document.getElementById('edit-sets').value=rec.sets||'';
+  document.getElementById('edit-reps').value=rec.reps||'';
+  document.getElementById('edit-memo').value=rec.memo||'';
+  document.getElementById('edit-rec-modal').classList.add('open');
+}
+function closeEditRecModal(){ document.getElementById('edit-rec-modal').classList.remove('open'); }
+function closeEditRecModalBg(e){ if(e.target===document.getElementById('edit-rec-modal')) closeEditRecModal(); }
+function saveEditRec(){
+  const date=document.getElementById('edit-date').value;
+  const machine=document.getElementById('edit-machine').value.trim();
+  const weight=parseFloat(document.getElementById('edit-weight').value);
+  const sets=parseInt(document.getElementById('edit-sets').value)||null;
+  const reps=parseInt(document.getElementById('edit-reps').value)||null;
+  const memo=document.getElementById('edit-memo').value.trim();
+  if(!date||!machine||isNaN(weight)){alert('日付・マシン名・重量を入力してください');return;}
+  const records=getRecords();
+  const idx=records.findIndex(r=>r.id===editingRecId);
+  if(idx>=0) records[idx]={...records[idx],date,machine,weight,sets,reps,memo};
+  saveRecords(records);
+  closeEditRecModal();
+  renderToday(); renderHistory();
+  if(document.getElementById('sec-stats').classList.contains('active')) renderStats();
+  toast('記録を更新しました');
+}
+
+// 体組成編集
+let editingBodyDate=null;
+function openEditBody(date){
+  const rec=getBody().find(r=>r.date===date);
+  if(!rec)return;
+  editingBodyDate=date;
+  document.getElementById('edit-b-date').value=date;
+  document.getElementById('edit-b-weight').value=rec.weight||'';
+  document.getElementById('edit-b-muscle').value=rec.muscle||'';
+  document.getElementById('edit-b-fat').value=rec.fat||'';
+  document.getElementById('edit-body-modal').classList.add('open');
+}
+function closeEditBodyModal(){ document.getElementById('edit-body-modal').classList.remove('open'); }
+function closeEditBodyModalBg(e){ if(e.target===document.getElementById('edit-body-modal')) closeEditBodyModal(); }
+function saveEditBody(){
+  const weight=parseFloat(document.getElementById('edit-b-weight').value)||null;
+  const muscle=parseFloat(document.getElementById('edit-b-muscle').value)||null;
+  const fat=parseFloat(document.getElementById('edit-b-fat').value)||null;
+  if(!weight&&!muscle&&!fat){alert('少なくとも1つの値を入力してください');return;}
+  const body=getBody();
+  const idx=body.findIndex(r=>r.date===editingBodyDate);
+  if(idx>=0) body[idx]={date:editingBodyDate,weight,muscle,fat};
+  saveBody(body);
+  closeEditBodyModal();
+  renderBodyLatest(); renderBodyHistory();
+  if(document.getElementById('sec-stats').classList.contains('active')) renderStats();
+  toast('体組成を更新しました');
 }
 
 // 履歴
@@ -439,8 +537,9 @@ function renderHistory(){
   if(!list.length){el.innerHTML='<div class="empty">記録がありません</div>';return;}
   el.innerHTML=list.map(r=>`<div class="log-item">
     <div><span class="log-machine">${r.machine}</span><div class="log-sub">${r.date}${setsLabel(r)?' · '+setsLabel(r):''}${r.memo?' · '+r.memo:''}</div></div>
-    <div style="display:flex;align-items:center;gap:10px;">
+    <div style="display:flex;align-items:center;gap:6px;">
       <span class="log-weight">${r.weight}kg</span>
+      <button class="btn-edit" onclick="openEditRec(${r.id})">✏️</button>
       <button class="btn-del" onclick="delRec(${r.id})">🗑</button>
     </div></div>`).join('');
 }
