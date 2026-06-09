@@ -97,9 +97,9 @@ input:focus,select:focus{border-color:#3266ad;background:#fff;}
         <div id="machine-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #d1d1d6;border-radius:9px;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,0.1);max-height:180px;overflow-y:auto;"></div>
       </div>
       <div class="row3">
-        <div><label>重量 (kg)</label><input type="number" id="inp-weight" placeholder="50" min="0" step="0.5"></div>
-        <div><label>セット数</label><input type="number" id="inp-sets" placeholder="3" min="1" step="1"></div>
-        <div><label>回数</label><input type="number" id="inp-reps" placeholder="10" min="1" step="1"></div>
+        <div><label>重量 (kg)</label><input type="number" id="inp-weight" placeholder="50" min="0" step="0.5" inputmode="decimal"></div>
+        <div><label>セット数</label><input type="number" id="inp-sets" placeholder="3" min="1" step="1" inputmode="numeric"></div>
+        <div><label>回数</label><input type="number" id="inp-reps" placeholder="10" min="1" step="1" inputmode="numeric"></div>
       </div>
       <label>メモ（任意）</label><input type="text" id="inp-memo" placeholder="例: 調子よかった">
       <button class="btn-primary" onclick="addRecord()">💾 記録する</button>
@@ -112,9 +112,9 @@ input:focus,select:focus{border-color:#3266ad;background:#fff;}
     <div class="card">
       <label>日付</label><input type="date" id="b-date">
       <div class="row3">
-        <div><label>体重 (kg)</label><input type="number" id="b-weight" placeholder="70" step="0.1" min="0"></div>
-        <div><label>筋肉量 (kg)</label><input type="number" id="b-muscle" placeholder="30" step="0.1" min="0"></div>
-        <div><label>体脂肪率 (%)</label><input type="number" id="b-fat" placeholder="20" step="0.1" min="0"></div>
+        <div><label>体重 (kg)</label><input type="number" id="b-weight" placeholder="70" step="0.1" min="0" inputmode="decimal"></div>
+        <div><label>筋肉量 (kg)</label><input type="number" id="b-muscle" placeholder="30" step="0.1" min="0" inputmode="decimal"></div>
+        <div><label>体脂肪率 (%)</label><input type="number" id="b-fat" placeholder="20" step="0.1" min="0" inputmode="decimal"></div>
       </div>
       <button class="btn-primary" onclick="addBody()">💾 記録する</button>
     </div>
@@ -198,9 +198,9 @@ input:focus,select:focus{border-color:#3266ad;background:#fff;}
     <label>日付</label><input type="date" id="edit-date">
     <label>マシン名</label><input type="text" id="edit-machine">
     <div class="row3">
-      <div><label>重量 (kg)</label><input type="number" id="edit-weight" step="0.5" min="0"></div>
-      <div><label>セット数</label><input type="number" id="edit-sets" step="1" min="1"></div>
-      <div><label>回数</label><input type="number" id="edit-reps" step="1" min="1"></div>
+      <div><label>重量 (kg)</label><input type="number" id="edit-weight" step="0.5" min="0" inputmode="decimal"></div>
+      <div><label>セット数</label><input type="number" id="edit-sets" step="1" min="1" inputmode="numeric"></div>
+      <div><label>回数</label><input type="number" id="edit-reps" step="1" min="1" inputmode="numeric"></div>
     </div>
     <label>メモ</label><input type="text" id="edit-memo">
     <button class="btn-primary" onclick="saveEditRec()">💾 保存する</button>
@@ -214,9 +214,9 @@ input:focus,select:focus{border-color:#3266ad;background:#fff;}
     <h3>✏️ 体組成記録を編集</h3>
     <label>日付</label><input type="date" id="edit-b-date" readonly style="background:#f2f2f7;color:#8e8e93;">
     <div class="row3">
-      <div><label>体重 (kg)</label><input type="number" id="edit-b-weight" step="0.1" min="0"></div>
-      <div><label>筋肉量 (kg)</label><input type="number" id="edit-b-muscle" step="0.1" min="0"></div>
-      <div><label>体脂肪率 (%)</label><input type="number" id="edit-b-fat" step="0.1" min="0"></div>
+      <div><label>体重 (kg)</label><input type="number" id="edit-b-weight" step="0.1" min="0" inputmode="decimal"></div>
+      <div><label>筋肉量 (kg)</label><input type="number" id="edit-b-muscle" step="0.1" min="0" inputmode="decimal"></div>
+      <div><label>体脂肪率 (%)</label><input type="number" id="edit-b-fat" step="0.1" min="0" inputmode="decimal"></div>
     </div>
     <button class="btn-primary" onclick="saveEditBody()">💾 保存する</button>
     <button onclick="closeEditBodyModal()" style="width:100%;margin-top:8px;padding:12px;background:#f2f2f7;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;">キャンセル</button>
