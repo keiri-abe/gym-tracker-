@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ジムトラッカー">
+<title>ジムトラッカー</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f7;color:#1c1c1e;min-height:100vh;}
+.app{max-width:430px;margin:0 auto;padding:1rem;}
+h1{font-size:20px;font-weight:600;margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
+.tab-bar{display:flex;gap:3px;margin-bottom:1.25rem;background:#e5e5ea;border-radius:10px;padding:4px;}
+.tab{flex:1;padding:7px 0;font-size:11px;border:none;background:transparent;color:#636366;border-radius:7px;cursor:pointer;font-weight:400;}
+.tab.active{background:#fff;color:#1c1c1e;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,0.12);}
+.sec{display:none;}.sec.active{display:block;}
+.card{background:#fff;border-radius:13px;padding:1rem 1.25rem;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);}
+label{font-size:13px;color:#636366;display:block;margin-bottom:4px;margin-top:10px;}
+label:first-child{margin-top:0;}
+input,select{width:100%;font-size:15px;padding:9px 11px;border:1px solid #d1d1d6;border-radius:9px;background:#f9f9fb;color:#1c1c1e;outline:none;-webkit-appearance:none;}
+input:focus,select:focus{border-color:#3266ad;background:#fff;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.btn-primary{width:100%;margin-top:14px;padding:12px;font-size:15px;font-weight:600;background:#3266ad;color:#fff;border:none;border-radius:10px;cursor:pointer;}
+.btn-primary:active{opacity:.85;}
+.btn-secondary{width:100%;margin-top:8px;padding:11px;font-size:14px;font-weight:500;background:#f2f2f7;color:#3266ad;border:none;border-radius:10px;cursor:pointer;}
+.btn-secondary:active{opacity:.75;}
+.btn-danger{width:100%;margin-top:8px;padding:11px;font-size:14px;font-weight:500;background:#fff0f0;color:#e24b4a;border:none;border-radius:10px;cursor:pointer;}
+.log-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f2f2f7;}
+.log-item:last-child{border-bottom:none;}
+.log-machine{font-size:14px;font-weight:600;color:#1c1c1e;}
+.log-sub{font-size:12px;color:#8e8e93;margin-top:1px;}
+.log-weight{font-size:15px;font-weight:600;color:#3266ad;}
+.btn-del{background:none;border:none;cursor:pointer;color:#c7c7cc;font-size:18px;padding:4px;line-height:1;}
+.empty{text-align:center;padding:2rem 0;color:#8e8e93;font-size:14px;}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.metric{background:#f9f9fb;border-radius:10px;padding:12px;}
+.metric-label{font-size:12px;color:#8e8e93;margin-bottom:4px;}
+.metric-value{font-size:22px;font-weight:600;color:#1c1c1e;}
+.chart-wrap{position:relative;width:100%;height:200px;}
+.chart-title{font-size:13px;color:#8e8e93;margin-bottom:8px;}
+.seg-bar{display:flex;gap:4px;margin-bottom:14px;}
+.seg{flex:1;padding:7px 0;font-size:12px;border:1px solid #d1d1d6;background:#f9f9fb;color:#636366;border-radius:8px;cursor:pointer;}
+.seg.active{background:#3266ad;color:#fff;border-color:#3266ad;font-weight:600;}
+.body-latest{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+.body-card{background:#fff;border-radius:13px;padding:12px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.08);}
+.body-val{font-size:18px;font-weight:600;color:#1c1c1e;}
+.body-lbl{font-size:11px;color:#8e8e93;margin-top:2px;}
+.body-diff{font-size:11px;margin-top:3px;font-weight:500;}
+.up{color:#e24b4a;}.dn{color:#1D9E75;}.eq{color:#8e8e93;}
+.toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:#1c1c1e;color:#fff;padding:11px 22px;border-radius:22px;font-size:14px;z-index:9999;white-space:nowrap;pointer-events:none;}
+.user-bar{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:10px;padding:10px 14px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,0.08);}
+.user-name{font-size:15px;font-weight:600;color:#1c1c1e;}
+.user-switch{font-size:13px;color:#3266ad;background:none;border:none;cursor:pointer;padding:0;}
+.datalist-wrap{position:relative;}
+.modal-bg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:100;align-items:flex-end;}
+.modal-bg.open{display:flex;}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:1.5rem 1.25rem;width:100%;max-height:80vh;overflow-y:auto;}
+.modal h3{font-size:17px;font-weight:600;margin-bottom:1rem;}
+.user-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f2f2f7;cursor:pointer;}
+.user-item:last-child{border-bottom:none;}
+.user-item-name{font-size:16px;font-weight:500;}
+.user-item-name.active-user{color:#3266ad;}
+.checkmark{color:#3266ad;font-size:18px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>🏋️ ジムトラッカー</h1>
+
+  <!-- ユーザーバー -->
+  <div class="user-bar">
+    <div>
+      <div style="font-size:11px;color:#8e8e93;margin-bottom:2px;">現在のユーザー</div>
+      <div class="user-name" id="current-user-name">—</div>
+    </div>
+    <button class="user-switch" onclick="openUserModal()">切り替え／追加 ›</button>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab active" onclick="sw('record')">＋ 記録</button>
+    <button class="tab" onclick="sw('body')">体組成</button>
+    <button class="tab" onclick="sw('history')">履歴</button>
+    <button class="tab" onclick="sw('stats')">集計</button>
+    <button class="tab" onclick="sw('backup')">保存</button>
+  </div>
+
+  <!-- 記録 -->
+  <div class="sec active" id="sec-record">
+    <div class="card">
+      <label>日付</label><input type="date" id="inp-date">
+      <label>マシン名</label>
+      <div class="datalist-wrap">
+        <input type="text" id="inp-machine" placeholder="例: チェストプレス" autocomplete="off" oninput="showSuggestions(this.value)" onfocus="showSuggestions(this.value)" onblur="setTimeout(hideSuggestions,200)">
+        <div id="machine-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #d1d1d6;border-radius:9px;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,0.1);max-height:180px;overflow-y:auto;"></div>
+      </div>
+      <div class="row3">
+        <div><label>重量 (kg)</label><input type="number" id="inp-weight" placeholder="50" min="0" step="0.5"></div>
+        <div><label>セット数</label><input type="number" id="inp-sets" placeholder="3" min="1" step="1"></div>
+        <div><label>回数</label><input type="number" id="inp-reps" placeholder="10" min="1" step="1"></div>
+      </div>
+      <label>メモ（任意）</label><input type="text" id="inp-memo" placeholder="例: 調子よかった">
+      <button class="btn-primary" onclick="addRecord()">💾 記録する</button>
+    </div>
+    <div id="today-log"></div>
+  </div>
+
+  <!-- 体組成 -->
+  <div class="sec" id="sec-body">
+    <div class="card">
+      <label>日付</label><input type="date" id="b-date">
+      <div class="row3">
+        <div><label>体重 (kg)</label><input type="number" id="b-weight" placeholder="70" step="0.1" min="0"></div>
+        <div><label>筋肉量 (kg)</label><input type="number" id="b-muscle" placeholder="30" step="0.1" min="0"></div>
+        <div><label>体脂肪率 (%)</label><input type="number" id="b-fat" placeholder="20" step="0.1" min="0"></div>
+      </div>
+      <button class="btn-primary" onclick="addBody()">💾 記録する</button>
+    </div>
+    <div id="body-latest-wrap"></div>
+    <div id="body-history-wrap"></div>
+  </div>
+
+  <!-- 履歴 -->
+  <div class="sec" id="sec-history">
+    <div style="margin-bottom:12px;">
+      <select id="filter-machine" onchange="renderHistory()">
+        <option value="">すべてのマシン</option>
+      </select>
+    </div>
+    <div class="card" id="history-list"><div class="empty">まだ記録がありません</div></div>
+  </div>
+
+  <!-- 集計 -->
+  <div class="sec" id="sec-stats">
+    <div class="metric-grid" id="metrics"></div>
+    <div class="card">
+      <p class="chart-title">マシン別 最高重量 (kg)</p>
+      <div class="chart-wrap"><canvas id="chartMax"></canvas></div>
+    </div>
+    <div class="card" style="margin-top:12px;">
+      <select id="chart-machine" onchange="renderTrend()" style="margin-bottom:10px;">
+        <option value="">マシンを選択して重量推移を表示</option>
+      </select>
+      <div class="chart-wrap"><canvas id="chartTrend"></canvas></div>
+    </div>
+    <div class="card" style="margin-top:12px;">
+      <div class="seg-bar">
+        <button class="seg active" onclick="setBodyMetric('weight',this)">体重</button>
+        <button class="seg" onclick="setBodyMetric('muscle',this)">筋肉量</button>
+        <button class="seg" onclick="setBodyMetric('fat',this)">体脂肪率</button>
+      </div>
+      <div class="chart-wrap"><canvas id="chartBody"></canvas></div>
+    </div>
+  </div>
+
+  <!-- バックアップ -->
+  <div class="sec" id="sec-backup">
+    <div class="card">
+      <p style="font-size:15px;font-weight:600;margin-bottom:4px;">📤 エクスポート</p>
+      <p style="font-size:13px;color:#8e8e93;margin-bottom:12px;">トレーニングと体組成をまとめて1つのCSVファイルに保存します。定期的にバックアップしてください。</p>
+      <button class="btn-primary" onclick="exportAll()">すべてのデータをCSV保存</button>
+    </div>
+    <div class="card" style="margin-top:4px;">
+      <p style="font-size:15px;font-weight:600;margin-bottom:4px;">📥 インポート</p>
+      <p style="font-size:13px;color:#8e8e93;margin-bottom:12px;">以前保存したCSVファイルからデータを復元します。</p>
+      <input type="file" id="imp-all" accept=".csv" onchange="importAll(this)" style="margin-top:0;">
+    </div>
+    <div class="card" style="margin-top:4px;">
+      <p style="font-size:15px;font-weight:600;margin-bottom:4px;">🗑 データ削除</p>
+      <p style="font-size:13px;color:#8e8e93;margin-bottom:8px;">現在のユーザーのデータをすべて削除します。</p>
+      <button class="btn-danger" onclick="clearAllData()">このユーザーのデータを削除</button>
+    </div>
+  </div>
+</div>
+
+<!-- ユーザーモーダル -->
+<div class="modal-bg" id="user-modal" onclick="closeUserModalBg(event)">
+  <div class="modal">
+    <h3>👤 ユーザー選択</h3>
+    <div id="user-list"></div>
+    <div style="margin-top:16px;border-top:1px solid #f2f2f7;padding-top:16px;">
+      <p style="font-size:13px;color:#8e8e93;margin-bottom:8px;">新しいユーザーを追加</p>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="new-user-input" placeholder="名前を入力" style="flex:1;">
+        <button onclick="addUser()" style="padding:9px 16px;background:#3266ad;color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;">追加</button>
+      </div>
+    </div>
+    <button onclick="closeUserModal()" style="width:100%;margin-top:12px;padding:12px;background:#f2f2f7;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;">閉じる</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ユーザー管理
+let users = JSON.parse(localStorage.getItem('gymUsers')||'["自分"]');
+let currentUser = localStorage.getItem('gymCurrentUser')||users[0];
+if(!users.includes(currentUser)){currentUser=users[0];}
+
+function ukey(k){ return 'gym_'+currentUser+'_'+k; }
+function getRecords(){ return JSON.parse(localStorage.getItem(ukey('records'))||'[]'); }
+function getBody(){ return JSON.parse(localStorage.getItem(ukey('body'))||'[]'); }
+function saveRecords(r){ localStorage.setItem(ukey('records'),JSON.stringify(r)); }
+function saveBody(b){ localStorage.setItem(ukey('body'),JSON.stringify(b)); }
+
+let chartMax=null,chartTrend=null,chartBody=null;
+let bodyMetric='weight';
+
+document.getElementById('inp-date').value=today();
+document.getElementById('b-date').value=today();
+updateUserBar();
+
+function today(){ return new Date().toISOString().slice(0,10); }
+
+function updateUserBar(){
+  document.getElementById('current-user-name').textContent=currentUser;
+}
+
+function openUserModal(){
+  renderUserList();
+  document.getElementById('user-modal').classList.add('open');
+}
+function closeUserModal(){
+  document.getElementById('user-modal').classList.remove('open');
+}
+function closeUserModalBg(e){
+  if(e.target===document.getElementById('user-modal')) closeUserModal();
+}
+function renderUserList(){
+  const el=document.getElementById('user-list');
+  el.innerHTML=users.map(u=>`<div class="user-item" onclick="switchUser('${u}')">
+    <span class="user-item-name${u===currentUser?' active-user':''}">${u}</span>
+    <div style="display:flex;align-items:center;gap:8px;" onclick="event.stopPropagation()">
+      <button onclick="renameUser('${u}')" style="background:none;border:none;color:#3266ad;font-size:13px;cursor:pointer;">名前変更</button>
+      ${u===currentUser?'<span class="checkmark">✓</span>':'<button onclick="deleteUser(\''+u+'\')" style="background:none;border:none;color:#c7c7cc;font-size:16px;cursor:pointer;">✕</button>'}
+    </div>
+  </div>`).join('');
+}
+function renameUser(u){
+  const newName=prompt(u+'の新しい名前を入力してください', u);
+  if(!newName||newName.trim()===u)return;
+  const trimmed=newName.trim();
+  if(users.includes(trimmed)){alert('同じ名前のユーザーがすでにいます');return;}
+  // データを新しいキーにコピー
+  const recs=localStorage.getItem('gym_'+u+'_records');
+  const body=localStorage.getItem('gym_'+u+'_body');
+  if(recs) localStorage.setItem('gym_'+trimmed+'_records', recs);
+  if(body) localStorage.setItem('gym_'+trimmed+'_body', body);
+  localStorage.removeItem('gym_'+u+'_records');
+  localStorage.removeItem('gym_'+u+'_body');
+  users=users.map(x=>x===u?trimmed:x);
+  localStorage.setItem('gymUsers',JSON.stringify(users));
+  if(currentUser===u){
+    currentUser=trimmed;
+    localStorage.setItem('gymCurrentUser',trimmed);
+    updateUserBar();
+  }
+  renderUserList();
+  toast(u+' → '+trimmed+'に変更しました');
+}
+function switchUser(u){
+  currentUser=u;
+  localStorage.setItem('gymCurrentUser',u);
+  updateUserBar();
+  closeUserModal();
+  renderToday();
+  toast(u+'に切り替えました');
+}
+function addUser(){
+  const name=document.getElementById('new-user-input').value.trim();
+  if(!name){alert('名前を入力してください');return;}
+  if(users.includes(name)){alert('同じ名前のユーザーがすでにいます');return;}
+  users.push(name);
+  localStorage.setItem('gymUsers',JSON.stringify(users));
+  document.getElementById('new-user-input').value='';
+  switchUser(name);
+  renderUserList();
+}
+function deleteUser(u){
+  if(u===currentUser){alert('現在のユーザーは削除できません');return;}
+  if(!confirm(u+'を削除しますか？\n（このユーザーのデータも削除されます）'))return;
+  users=users.filter(x=>x!==u);
+  localStorage.setItem('gymUsers',JSON.stringify(users));
+  localStorage.removeItem('gym_'+u+'_records');
+  localStorage.removeItem('gym_'+u+'_body');
+  renderUserList();
+}
+
+// マシン名サジェスト
+function getMachines(){
+  const r=getRecords();
+  return [...new Set(r.map(x=>x.machine))];
+}
+function showSuggestions(val){
+  const machines=getMachines();
+  const filtered=val?machines.filter(m=>m.includes(val)):machines;
+  const el=document.getElementById('machine-suggestions');
+  if(!filtered.length){el.style.display='none';return;}
+  el.style.display='block';
+  el.innerHTML=filtered.map(m=>`<div onclick="selectMachine('${m}')" style="padding:10px 12px;font-size:15px;border-bottom:1px solid #f2f2f7;cursor:pointer;">${m}</div>`).join('');
+}
+function hideSuggestions(){
+  document.getElementById('machine-suggestions').style.display='none';
+}
+function selectMachine(m){
+  document.getElementById('inp-machine').value=m;
+  hideSuggestions();
+}
+
+// 記録
+function addRecord(){
+  const date=document.getElementById('inp-date').value;
+  const machine=document.getElementById('inp-machine').value.trim();
+  const weight=parseFloat(document.getElementById('inp-weight').value);
+  const sets=parseInt(document.getElementById('inp-sets').value)||null;
+  const reps=parseInt(document.getElementById('inp-reps').value)||null;
+  const memo=document.getElementById('inp-memo').value.trim();
+  if(!date||!machine||isNaN(weight)){alert('日付・マシン名・重量を入力してください');return;}
+  const records=getRecords();
+  records.unshift({id:Date.now(),date,machine,weight,sets,reps,memo});
+  saveRecords(records);
+  document.getElementById('inp-machine').value='';
+  document.getElementById('inp-weight').value='';
+  document.getElementById('inp-sets').value='';
+  document.getElementById('inp-reps').value='';
+  document.getElementById('inp-memo').value='';
+  renderToday();
+  toast('トレーニングを記録しました！');
+}
+
+function setsLabel(r){
+  if(r.sets&&r.reps) return r.sets+'セット × '+r.reps+'回';
+  if(r.sets) return r.sets+'セット';
+  if(r.reps) return r.reps+'回';
+  if(r.sets_str) return r.sets_str;
+  return '';
+}
+
+function renderToday(){
+  const d=document.getElementById('inp-date').value;
+  const records=getRecords();
+  const list=records.filter(r=>r.date===d);
+  const el=document.getElementById('today-log');
+  if(!list.length){el.innerHTML='';return;}
+  el.innerHTML='<div class="card"><p style="font-size:13px;color:#8e8e93;margin-bottom:8px;">今日の記録（'+list.length+'件）</p>'
+    +list.map(r=>`<div class="log-item">
+      <div><span class="log-machine">${r.machine}</span><div class="log-sub">${setsLabel(r)}${r.memo?' · '+r.memo:''}</div></div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="log-weight">${r.weight}kg</span>
+        <button class="btn-del" onclick="delRec(${r.id})">🗑</button>
+      </div></div>`).join('')+'</div>';
+}
+
+function delRec(id){
+  if(!confirm('削除しますか？'))return;
+  const records=getRecords().filter(r=>r.id!==id);
+  saveRecords(records);
+  renderToday(); renderHistory();
+  if(document.getElementById('sec-stats').classList.contains('active')) renderStats();
+}
+
+// 体組成
+function addBody(){
+  const date=document.getElementById('b-date').value;
+  const weight=parseFloat(document.getElementById('b-weight').value)||null;
+  const muscle=parseFloat(document.getElementById('b-muscle').value)||null;
+  const fat=parseFloat(document.getElementById('b-fat').value)||null;
+  if(!date||(!weight&&!muscle&&!fat)){alert('日付と少なくとも1つの値を入力してください');return;}
+  const body=getBody();
+  const idx=body.findIndex(r=>r.date===date);
+  if(idx>=0) body[idx]={date,weight,muscle,fat};
+  else body.unshift({date,weight,muscle,fat});
+  body.sort((a,b)=>b.date.localeCompare(a.date));
+  saveBody(body);
+  document.getElementById('b-weight').value='';
+  document.getElementById('b-muscle').value='';
+  document.getElementById('b-fat').value='';
+  renderBodyLatest(); renderBodyHistory();
+  toast('体組成を記録しました！');
+}
+
+function renderBodyLatest(){
+  const body=getBody();
+  const el=document.getElementById('body-latest-wrap');
+  if(!body.length){el.innerHTML='<p class="empty">まだ記録がありません</p>';return;}
+  const latest=body[0], prev=body[1]||null;
+  function diffStr(cur,pre,unit,lower){
+    if(cur==null||pre==null)return '';
+    const d=cur-pre;
+    const cls=d===0?'eq':(lower?(d<0?'dn':'up'):(d>0?'dn':'up'));
+    return '<div class="body-diff '+cls+'">'+(d>0?'+':'')+d.toFixed(1)+unit+'</div>';
+  }
+  el.innerHTML='<div class="body-latest">'
+    +'<div class="body-card"><div class="body-val">'+(latest.weight!=null?latest.weight+'kg':'—')+'</div><div class="body-lbl">体重</div>'+diffStr(latest.weight,prev?.weight,'kg',true)+'</div>'
+    +'<div class="body-card"><div class="body-val">'+(latest.muscle!=null?latest.muscle+'kg':'—')+'</div><div class="body-lbl">筋肉量</div>'+diffStr(latest.muscle,prev?.muscle,'kg',false)+'</div>'
+    +'<div class="body-card"><div class="body-val">'+(latest.fat!=null?latest.fat+'%':'—')+'</div><div class="body-lbl">体脂肪率</div>'+diffStr(latest.fat,prev?.fat,'%',true)+'</div>'
+    +'</div>';
+}
+
+function renderBodyHistory(){
+  const body=getBody();
+  const el=document.getElementById('body-history-wrap');
+  if(!body.length){el.innerHTML='';return;}
+  el.innerHTML='<div class="card"><p style="font-size:13px;color:#8e8e93;margin-bottom:8px;">記録履歴</p>'
+    +body.map(r=>`<div class="log-item">
+      <span class="log-machine">${r.date}</span>
+      <div style="display:flex;align-items:center;gap:12px;font-size:13px;">
+        ${r.weight!=null?'<span style="color:#3266ad">'+r.weight+'kg</span>':''}
+        ${r.muscle!=null?'<span style="color:#1D9E75">'+r.muscle+'kg</span>':''}
+        ${r.fat!=null?'<span style="color:#e24b4a">'+r.fat+'%</span>':''}
+        <button class="btn-del" onclick="delBody('${r.date}')">🗑</button>
+      </div></div>`).join('')+'</div>';
+}
+
+function delBody(date){
+  if(!confirm('削除しますか？'))return;
+  const body=getBody().filter(r=>r.date!==date);
+  saveBody(body);
+  renderBodyLatest(); renderBodyHistory();
+  if(document.getElementById('sec-stats').classList.contains('active')) renderStats();
+}
+
+// 履歴
+function updateFilters(){
+  const records=getRecords();
+  const machines=[...new Set(records.map(r=>r.machine))];
+  const sel=document.getElementById('filter-machine');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">すべてのマシン</option>'+machines.map(m=>'<option value="'+m+'"'+(m===cur?' selected':'')+'>'+m+'</option>').join('');
+  const sel2=document.getElementById('chart-machine');
+  if(sel2) sel2.innerHTML='<option value="">マシンを選択して重量推移を表示</option>'+machines.map(m=>'<option value="'+m+'">'+m+'</option>').join('');
+}
+
+function renderHistory(){
+  const machine=document.getElementById('filter-machine').value;
+  const records=getRecords();
+  const list=machine?records.filter(r=>r.machine===machine):records;
+  const el=document.getElementById('history-list');
+  if(!list.length){el.innerHTML='<div class="empty">記録がありません</div>';return;}
+  el.innerHTML=list.map(r=>`<div class="log-item">
+    <div><span class="log-machine">${r.machine}</span><div class="log-sub">${r.date}${setsLabel(r)?' · '+setsLabel(r):''}${r.memo?' · '+r.memo:''}</div></div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="log-weight">${r.weight}kg</span>
+      <button class="btn-del" onclick="delRec(${r.id})">🗑</button>
+    </div></div>`).join('');
+}
+
+// 集計
+function renderStats(){
+  updateFilters();
+  const records=getRecords();
+  const body=getBody();
+  const machines=[...new Set(records.map(r=>r.machine))];
+  const days=[...new Set(records.map(r=>r.date))].length;
+  document.getElementById('metrics').innerHTML=
+    '<div class="metric"><div class="metric-label">総記録数</div><div class="metric-value">'+records.length+'</div></div>'
+    +'<div class="metric"><div class="metric-label">トレーニング日数</div><div class="metric-value">'+days+'</div></div>'
+    +'<div class="metric"><div class="metric-label">マシン種類</div><div class="metric-value">'+machines.length+'</div></div>'
+    +'<div class="metric"><div class="metric-label">体組成記録数</div><div class="metric-value">'+body.length+'</div></div>';
+
+  const maxByM=machines.map(m=>({m,max:Math.max(...records.filter(r=>r.machine===m).map(r=>r.weight))}));
+  if(chartMax)chartMax.destroy();
+  if(maxByM.length){
+    chartMax=new Chart(document.getElementById('chartMax'),{
+      type:'bar',
+      data:{labels:maxByM.map(x=>x.m),datasets:[{label:'最高重量(kg)',data:maxByM.map(x=>x.max),backgroundColor:'#3266ad',borderRadius:4}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:'#888'}},x:{ticks:{color:'#888',maxRotation:30,autoSkip:false}}}}
+    });
+  }
+  renderTrend(); renderBodyChart();
+}
+
+function renderTrend(){
+  const machine=document.getElementById('chart-machine').value;
+  if(chartTrend)chartTrend.destroy();
+  if(!machine)return;
+  const records=getRecords();
+  const data=[...records.filter(r=>r.machine===machine)].reverse();
+  chartTrend=new Chart(document.getElementById('chartTrend'),{
+    type:'line',
+    data:{labels:data.map(r=>r.date.slice(5)),datasets:[{label:'重量(kg)',data:data.map(r=>r.weight),borderColor:'#3266ad',backgroundColor:'rgba(50,102,173,0.08)',pointBackgroundColor:'#3266ad',tension:0.3,fill:true}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false,ticks:{color:'#888'}},x:{ticks:{color:'#888',maxRotation:30}}}}
+  });
+}
+
+function setBodyMetric(m,btn){
+  bodyMetric=m;
+  document.querySelectorAll('.seg').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBodyChart();
+}
+
+function renderBodyChart(){
+  const body=getBody();
+  const data=[...body].reverse().filter(r=>r[bodyMetric]!=null);
+  if(chartBody)chartBody.destroy();
+  if(!data.length)return;
+  const colors={weight:'#3266ad',muscle:'#1D9E75',fat:'#e24b4a'};
+  const labels={weight:'体重(kg)',muscle:'筋肉量(kg)',fat:'体脂肪率(%)'};
+  const c=colors[bodyMetric];
+  chartBody=new Chart(document.getElementById('chartBody'),{
+    type:'line',
+    data:{labels:data.map(r=>r.date.slice(5)),datasets:[{label:labels[bodyMetric],data:data.map(r=>r[bodyMetric]),borderColor:c,backgroundColor:c+'18',pointBackgroundColor:c,tension:0.3,fill:true}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false,ticks:{color:'#888'}},x:{ticks:{color:'#888',maxRotation:30}}}}
+  });
+}
+
+// CSV エクスポート（統合）
+function exportAll(){
+  const records=getRecords();
+  const body=getBody();
+  if(!records.length&&!body.length){alert('記録がありません');return;}
+  const rows=[['種別','日付','マシン名','重量(kg)','セット数','回数','メモ','体重(kg)','筋肉量(kg)','体脂肪率(%)']];
+  records.forEach(r=>rows.push(['training',r.date,r.machine,r.weight,r.sets||'',r.reps||'',r.memo||'','','','']));
+  body.forEach(r=>rows.push(['body',r.date,'','','','','',r.weight||'',r.muscle||'',r.fat||'']));
+  downloadCSV(rows, currentUser+'_ジム記録_'+today()+'.csv');
+  toast('CSVを保存しました');
+}
+
+function downloadCSV(rows, filename){
+  const bom='\uFEFF';
+  const csv=bom+rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  a.click();
+}
+
+// CSV インポート（統合）
+function importAll(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const lines=e.target.result.replace(/^\uFEFF/,'').split('\n').filter(l=>l.trim());
+    const records=getRecords();
+    const body=getBody();
+    let tCount=0, bCount=0;
+    lines.slice(1).forEach(line=>{
+      const cols=parseCSVLine(line);
+      if(cols.length<2)return;
+      const [type,date,machine,weight,sets,reps,memo,bWeight,bMuscle,bFat]=cols;
+      if(type==='training'&&date&&machine&&weight){
+        records.push({id:Date.now()+Math.random(),date,machine,weight:parseFloat(weight),sets:sets?parseInt(sets):null,reps:reps?parseInt(reps):null,memo:memo||''});
+        tCount++;
+      } else if(type==='body'&&date){
+        const rec={date,weight:bWeight?parseFloat(bWeight):null,muscle:bMuscle?parseFloat(bMuscle):null,fat:bFat?parseFloat(bFat):null};
+        const idx=body.findIndex(r=>r.date===date);
+        if(idx>=0) body[idx]=rec; else body.push(rec);
+        bCount++;
+      }
+    });
+    records.sort((a,b)=>b.date.localeCompare(a.date));
+    body.sort((a,b)=>b.date.localeCompare(a.date));
+    saveRecords(records);
+    saveBody(body);
+    renderToday(); renderBodyLatest(); renderBodyHistory();
+    input.value='';
+    toast('トレーニング'+tCount+'件・体組成'+bCount+'件をインポートしました');
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+function parseCSVLine(line){
+  const result=[];
+  let cur='', inQ=false;
+  for(let i=0;i<line.length;i++){
+    if(line[i]==='"'){ if(inQ&&line[i+1]==='"'){cur+='"';i++;} else inQ=!inQ; }
+    else if(line[i]===','&&!inQ){ result.push(cur.trim()); cur=''; }
+    else cur+=line[i];
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+function clearAllData(){
+  if(!confirm(currentUser+'のすべてのデータを削除しますか？\nこの操作は元に戻せません。'))return;
+  saveRecords([]);
+  saveBody([]);
+  renderToday(); renderBodyLatest(); renderBodyHistory();
+  toast('データを削除しました');
+}
+
+// タブ切替
+function sw(t){
+  ['record','body','history','stats','backup'].forEach((s,i)=>{
+    document.querySelectorAll('.tab')[i].classList.toggle('active',s===t);
+    document.getElementById('sec-'+s).classList.toggle('active',s===t);
+  });
+  if(t==='history'){updateFilters();renderHistory();}
+  if(t==='stats'){renderStats();}
+  if(t==='body'){renderBodyLatest();renderBodyHistory();}
+}
+
+function toast(msg){
+  const old=document.querySelector('.toast');
+  if(old)old.remove();
+  const t=document.createElement('div');
+  t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity='0';setTimeout(()=>t.remove(),500);},2000);
+}
+
+renderToday();
+</script>
+</body>
+</html>
