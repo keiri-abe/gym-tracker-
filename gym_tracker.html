@@ -528,7 +528,7 @@ function saveEditBody(){
 // 履歴
 function updateFilters(){
   const records=getRecords();
-  const machines=[...new Set(records.map(r=>r.machine))];
+  const machines=[...new Set(records.map(r=>r.machine))].sort((a,b)=>circledNum(a)-circledNum(b));
   const sel=document.getElementById('filter-machine');
   const cur=sel.value;
   sel.innerHTML='<option value="">すべてのマシン</option>'+machines.map(m=>'<option value="'+m+'"'+(m===cur?' selected':'')+'>'+m+'</option>').join('');
@@ -556,7 +556,7 @@ function renderStats(){
   updateFilters();
   const records=getRecords();
   const body=getBody();
-  const machines=[...new Set(records.map(r=>r.machine))];
+  const machines=[...new Set(records.map(r=>r.machine))].sort((a,b)=>circledNum(a)-circledNum(b));
   const days=[...new Set(records.map(r=>r.date))].length;
   document.getElementById('metrics').innerHTML=
     '<div class="metric"><div class="metric-label">総記録数</div><div class="metric-value">'+records.length+'</div></div>'
