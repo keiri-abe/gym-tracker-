@@ -320,9 +320,16 @@ function deleteUser(u){
 }
 
 // マシン名サジェスト
+function circledNum(m){
+  // 先頭の①〜⑳の数字を返す（ソート用）
+  const match=m.match(/^([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳])/);
+  if(!match)return 999;
+  return '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳'.indexOf(match[1]);
+}
 function getMachines(){
   const r=getRecords();
-  return [...new Set(r.map(x=>x.machine))];
+  const machines=[...new Set(r.map(x=>x.machine))];
+  return machines.sort((a,b)=>circledNum(a)-circledNum(b));
 }
 function showSuggestions(val){
   const machines=getMachines();
